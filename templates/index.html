@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EncryptX — Forensic Evidence Transmission</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --white:     #ffffff;
+  --off:       #f7f6f3;
+  --paper:     #f0ede6;
+  --rule:      #e2ddd6;
+  --rule2:     #ccc8c0;
+  --ink:       #1a1814;
+  --ink2:      #3d3a35;
+  --ink3:      #7a756c;
+  --ink4:      #b0aa9f;
+  --red:       #c0392b;
+  --red2:      #e74c3c;
+  --redbg:     #fdf2f1;
+  --blue:      #1a3a6b;
+  --blue2:     #2563c0;
+  --bluebg:    #f0f4fc;
+  --green:     #1a6b3a;
+  --greenbg:   #f0f8f3;
+  --stamp:     #c0392b;
+  --serif:     'Syne', sans-serif;
+  --mono:      'DM Mono', monospace;
+  --body:      'Inter', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--off);
+  color: var(--ink);
+  font-family: var(--body);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--white);
+  border-bottom: 2px solid var(--ink);
+  padding: 0 56px;
+  position: sticky; top:0; z-index:100;
+}
+.hinner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.brand {
+  display: flex; align-items: baseline; gap: 4px;
+  cursor: pointer; text-decoration: none;
+}
+.brand-name {
+  font-family: var(--serif);
+  font-size: 22px; font-weight: 800;
+  color: var(--ink); letter-spacing: -0.5px;
+}
+.brand-name span { color: var(--red); }
+.brand-dot {
+  width: 6px; height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  margin-bottom: 2px;
+}
+.brand-tag {
+  font-family: var(--mono);
+  font-size: 9px; font-weight: 400;
+  color: var(--ink3); letter-spacing: 2px;
+  text-transform: uppercase;
+  border-left: 1px solid var(--rule2);
+  padding-left: 14px; margin-left: 14px;
+  line-height: 1;
+  align-self: center;
+}
+.hright {
+  display: flex; align-items: center; gap: 20px;
+}
+.h-stamp {
+  font-family: var(--mono);
+  font-size: 9px; letter-spacing: 3px;
+  color: var(--stamp);
+  border: 1.5px solid var(--stamp);
+  padding: 4px 10px;
+  transform: rotate(-1deg);
+  display: inline-block;
+}
+.h-id {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--ink4);
+  letter-spacing: 1px;
+}
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ════════════════════════════
+   LANDING
+════════════════════════════ */
+#page-landing {
+  min-height: calc(100vh - 66px);
+  display: none;
+  align-items: stretch;
+}
+#page-landing.active { display: flex; }
+
+.land-left {
+  flex: 1;
+  background: var(--white);
+  border-right: 2px solid var(--ink);
+  padding: 80px 64px;
+  display: flex; flex-direction: column;
+  justify-content: center;
+}
+.land-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 3px;
+  color: var(--ink3); text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.land-eyebrow::before {
+  content: ''; width: 24px; height: 1px; background: var(--ink3);
+}
+.land-h1 {
+  font-family: var(--serif);
+  font-size: 52px; font-weight: 800;
+  line-height: 1.0; letter-spacing: -1px;
+  color: var(--ink); margin-bottom: 8px;
+}
+.land-h1 span { color: var(--red); }
+.land-h2 {
+  font-family: var(--serif);
+  font-size: 52px; font-weight: 400;
+  line-height: 1.0; letter-spacing: -1px;
+  color: var(--ink2); margin-bottom: 32px;
+}
+.land-desc {
+  font-size: 14px; color: var(--ink3);
+  line-height: 1.8; max-width: 380px;
+  margin-bottom: 48px;
+}
+.land-meta {
+  display: flex; gap: 32px;
+}
+.land-meta-item {
+  font-family: var(--mono);
+  font-size: 10px; color: var(--ink4);
+  letter-spacing: 1px; line-height: 1.8;
+}
+.land-meta-item b {
+  display: block; font-family: var(--serif);
+  font-size: 20px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.5px;
+  font-style: normal;
+}
+
+.land-right {
+  width: 440px; min-width: 440px;
+  background: var(--off);
+  padding: 80px 48px;
+  display: flex; flex-direction: column;
+  justify-content: center; gap: 16px;
+}
+.land-right-label {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--ink3); text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.role-btn {
+  background: var(--white);
+  border: 1.5px solid var(--rule2);
+  padding: 28px 32px;
+  cursor: pointer; transition: all 0.2s;
+  text-align: left; position: relative;
+  overflow: hidden;
+}
+.role-btn::after {
+  content: '→';
+  position: absolute; right: 28px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px; color: var(--ink4);
+  transition: all 0.2s;
+}
+.role-btn:hover { border-color: var(--ink); }
+.role-btn:hover::after { right: 22px; color: var(--ink); }
+
+.role-btn.sender:hover  { border-color: var(--red); }
+.role-btn.sender:hover::after  { color: var(--red); }
+.role-btn.receiver:hover{ border-color: var(--blue); }
+.role-btn.receiver:hover::after{ color: var(--blue); }
+
+.role-no {
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 2px;
+  color: var(--ink4); margin-bottom: 6px;
+}
+.role-name {
+  font-family: var(--serif);
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.role-btn.sender   .role-name { color: var(--red); }
+.role-btn.receiver .role-name { color: var(--blue); }
+.role-sub {
+  font-size: 12px; color: var(--ink3); line-height: 1.5;
+}
+
+.land-divider {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--mono); font-size: 10px; color: var(--ink4);
+}
+.land-divider::before, .land-divider::after {
+  content:''; flex:1; height:1px; background:var(--rule2);
+}
+
+/* ════════════════════════════
+   SHARED INNER LAYOUT
+════════════════════════════ */
+.page-wrap {
+  max-width: 1200px; margin: 0 auto;
+  padding: 48px 56px;
+}
+.back {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--ink3); letter-spacing: 1px;
+  background: none; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-bottom: 40px; transition: color 0.15s; padding:0;
+}
+.back:hover { color: var(--ink); }
+
+.page-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 20px; margin-bottom: 40px;
+}
+.ph-left {}
+.ph-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink3); letter-spacing: 3px;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.ph-title {
+  font-family: var(--serif); font-size: 30px;
+  font-weight: 800; letter-spacing: -0.5px;
+}
+.sender-page   .ph-title { color: var(--red); }
+.receiver-page .ph-title { color: var(--blue); }
+.ph-right {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink4); letter-spacing: 1px;
+  text-align: right; line-height: 1.8;
+}
+
+/* BLOCKS */
+.block {
+  background: var(--white);
+  border: 1.5px solid var(--rule);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+.block-label {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.block-label::after { content:''; flex:1; height:1px; background:var(--rule); }
+
+/* UPLOAD */
+.upload-area {
+  border: 1.5px dashed var(--rule2);
+  padding: 52px 32px; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+  background: var(--off);
+}
+.upload-area:hover, .upload-area.drag {
+  border-color: var(--ink); border-style: solid;
+  background: var(--paper);
+}
+.ua-icon { font-size: 28px; margin-bottom: 12px; opacity: 0.4; }
+.ua-main {
+  font-family: var(--serif); font-size: 16px;
+  font-weight: 700; color: var(--ink); margin-bottom: 4px;
+}
+.ua-sub {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink4); letter-spacing: 1px;
+}
+#file-input { display: none; }
+
+.preview-row {
+  display: none; margin-top: 16px;
+  padding: 14px 18px; background: var(--off);
+  border: 1px solid var(--rule);
+  align-items: center; gap: 14px;
+}
+.preview-row.show { display: flex; }
+.prev-img { width: 48px; height: 48px; object-fit: cover; border: 1px solid var(--rule2); }
+.prev-meta {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink3); line-height: 1.9; letter-spacing: 0.5px;
+}
+.prev-meta strong { color: var(--ink); font-weight: 500; }
+
+/* BUTTONS */
+.btn {
+  font-family: var(--serif); font-size: 13px;
+  font-weight: 700; letter-spacing: 0.5px;
+  padding: 13px 36px; cursor: pointer;
+  border: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-red {
+  background: var(--ink); color: var(--white);
+}
+.btn-red:not(:disabled):hover { background: var(--red); }
+.btn-blue {
+  background: var(--blue); color: var(--white);
+}
+.btn-blue:not(:disabled):hover { background: var(--blue2); }
+.btn-outline {
+  background: transparent; color: var(--ink);
+  border: 1.5px solid var(--ink);
+}
+.btn-outline:hover { background: var(--ink); color: var(--white); }
+
+/* PROGRESS */
+.prog-wrap { display:none; margin: 20px 0; }
+.prog-wrap.show { display: block; }
+.prog-top {
+  display: flex; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.prog-txt, .prog-pct {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink3); letter-spacing: 1px;
+}
+.pbar { height: 3px; background: var(--rule); overflow: hidden; }
+.pfill {
+  height: 100%; background: var(--ink);
+  width: 0%; transition: width 0.4s ease;
+}
+.steps {
+  display: flex; gap: 6px; margin-top: 12px;
+}
+.stp {
+  flex: 1; padding: 7px 4px; text-align: center;
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 1px; color: var(--ink4);
+  border: 1px solid var(--rule); transition: all 0.3s;
+}
+.stp.active { color: var(--ink); border-color: var(--ink); background: var(--paper); }
+.stp.done   { color: var(--green); border-color: var(--green); background: var(--greenbg); }
+
+/* ALERT */
+.alert {
+  display: none; margin-bottom: 16px;
+  padding: 12px 16px; font-family: var(--mono);
+  font-size: 11px; letter-spacing: 0.5px;
+  border-left: 3px solid var(--red);
+  background: var(--redbg); color: var(--red);
+  gap: 8px; align-items: center;
+}
+.alert.show { display: flex; }
+
+/* RESULTS */
+.results { display: none; }
+.results.show { display: block; animation: up 0.35s ease; }
+@keyframes up { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.section-head {
+  display: flex; align-items: baseline;
+  gap: 12px; margin-bottom: 16px; margin-top: 32px;
+}
+.sh-num {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--ink4); letter-spacing: 2px;
+}
+.sh-title {
+  font-family: var(--serif); font-size: 14px;
+  font-weight: 700; color: var(--ink); letter-spacing: 0.2px;
+}
+.sh-line { flex:1; height:1px; background:var(--rule); }
+
+/* IMAGE GRID */
+.img-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 10px; margin-bottom: 24px;
+}
+.img-tile { background: var(--white); border: 1px solid var(--rule); overflow: hidden; }
+.img-tile-top {
+  padding: 8px 12px; border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.img-tile-top span:first-child {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--ink3); letter-spacing: 2px; text-transform: uppercase;
+}
+.tag {
+  font-family: var(--mono); font-size: 8px;
+  padding: 2px 6px; letter-spacing: 1px;
+}
+.tag-plain { color: var(--blue);  border: 1px solid #a0b8e0; background: var(--bluebg); }
+.tag-bij   { color: var(--ink2);  border: 1px solid var(--rule2); }
+.tag-enc   { color: var(--red);   border: 1px solid #e0a0a0; background: var(--redbg); }
+.tag-diff  { color: var(--green); border: 1px solid #a0d0b0; background: var(--greenbg); }
+.img-tile img { width:100%; display:block; }
+
+/* METRICS */
+.met-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 10px; margin-bottom: 24px;
+}
+.met {
+  background: var(--white); border: 1px solid var(--rule);
+  padding: 20px 22px; position: relative;
+}
+.met::before {
+  content:''; position:absolute; top:0; left:0;
+  width:3px; height:100%;
+}
+.met-npcr::before  { background: var(--blue); }
+.met-uaci::before  { background: var(--red); }
+.met-stat::before  { background: var(--green); }
+.met-lbl {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--ink4); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.met-val {
+  font-family: var(--serif); font-size: 26px;
+  font-weight: 800; line-height: 1;
+  letter-spacing: -0.5px; margin-bottom: 4px;
+}
+.met-npcr .met-val { color: var(--blue); }
+.met-uaci .met-val { color: var(--red); }
+.met-stat .met-val { color: var(--green); font-size: 15px; }
+.met-hint {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--ink4); letter-spacing: 1px;
+}
+.met-bar { height: 2px; background: var(--rule); margin-top: 10px; overflow: hidden; }
+.met-bar div { height:100%; transition: width 1s ease; }
+
+/* CHARTS */
+.chart-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 24px;
+}
+.chart-tile {
+  background: var(--white); border: 1px solid var(--rule); padding: 20px;
+}
+.chart-lbl {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--ink3); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+canvas { max-height: 170px; }
+.t-grid {
+  display: grid; grid-template-columns: repeat(9,1fr);
+  gap: 2px;
+}
+.t-cell {
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-family: var(--mono); font-size: 7.5px; color: var(--ink);
+  border: 1px solid var(--rule);
+}
+
+/* SESSION */
+.session-card {
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  padding: 24px 28px; margin-bottom: 20px;
+  position: relative;
+}
+.session-card::before {
+  content: 'CONFIDENTIAL';
+  position: absolute; top: -9px; left: 20px;
+  background: var(--paper);
+  font-family: var(--mono); font-size: 8px;
+  letter-spacing: 3px; color: var(--red);
+  padding: 0 8px;
+}
+.sess-lbl {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--ink3); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.sess-id {
+  font-family: var(--mono); font-size: 32px;
+  font-weight: 500; color: var(--ink);
+  letter-spacing: 8px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--rule2); padding-bottom: 12px;
+}
+.sess-note {
+  font-size: 12px; color: var(--ink3); line-height: 1.7;
+}
+.dl-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+.dl-btn {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.5px; padding: 8px 14px;
+  background: var(--white); border: 1px solid var(--rule2);
+  color: var(--ink3); cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.dl-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ════════════════════════════
+   RECEIVER PAGE
+════════════════════════════ */
+.receiver-page .page-wrap { max-width: 680px; }
+
+.field-lbl {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink3); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 8px;
+  display: block;
+}
+.field-in {
+  width: 100%; background: var(--off);
+  border: 1.5px solid var(--rule2);
+  color: var(--ink); font-family: var(--mono);
+  font-size: 20px; padding: 14px 18px;
+  letter-spacing: 4px; outline: none;
+  transition: border-color 0.2s;
+}
+.field-in:focus { border-color: var(--ink); background: var(--white); }
+.field-in::placeholder { color: var(--ink4); letter-spacing: 2px; font-size: 13px; }
+
+/* DECRYPTED RESULT */
+.dec-out { display:none; }
+.dec-out.show { display:block; margin-top:28px; animation:up 0.4s ease; }
+.dec-img-wrap {
+  background: var(--white); border: 1.5px solid var(--ink);
+  overflow: hidden;
+}
+.dec-img-top {
+  padding: 12px 18px; border-bottom: 1.5px solid var(--ink);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--off);
+}
+.dec-img-title {
+  font-family: var(--serif); font-size: 13px;
+  font-weight: 700; color: var(--ink); letter-spacing: 0.3px;
+}
+.dec-badge {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--green); letter-spacing: 2px;
+  border: 1px solid var(--green);
+  background: var(--greenbg); padding: 4px 10px;
+}
+.dec-img-wrap img {
+  width:100%; display:block;
+  max-height: 540px; object-fit: contain;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--off); }
+::-webkit-scrollbar-thumb { background: var(--rule2); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hinner">
+    <div class="brand" onclick="goLanding()">
+      <div class="brand-name">Encrypt<span>X</span></div>
+    </div>
+    <div class="hright">
+    </div>
+  </div>
+</header>
+
+
+<!-- ════════════════════════════
+     LANDING
+════════════════════════════ -->
+<div id="page-landing" class="page active">
+  <div class="land-left">
+    <div class="land-h1">Secure.<span> Encrypt.</span></div>
+    <div class="land-h2">Transmit.</div>
+  </div>
+
+  <div class="land-right">
+    <div class="land-right-label">Select your role to continue</div>
+
+    <div class="role-btn sender" onclick="goPage('sender')">
+      <div class="role-no">01 —</div>
+      <div class="role-name">Sender</div>
+      <div class="role-sub">Upload and encrypt forensic evidence image</div>
+    </div>
+
+    <div class="land-divider">OR</div>
+
+    <div class="role-btn receiver" onclick="goPage('receiver')">
+      <div class="role-no">02 —</div>
+      <div class="role-name">Receiver</div>
+      <div class="role-sub">Enter session ID and decrypt evidence</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════
+     SENDER
+════════════════════════════ -->
+<div id="page-sender" class="page sender-page">
+  <div class="page-wrap">
+    <button class="back" onclick="goLanding()">← Back to role select</button>
+
+    <div class="page-header">
+      <div class="ph-left">
+        <div class="ph-label">Role — Sender</div>
+        <div class="ph-title">Encrypt Evidence</div>
+      </div>
+      <div class="ph-right">
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="block">
+      <div class="block-label">Step 01 — Upload Evidence Image</div>
+      <div class="upload-area" id="upload-zone"
+           onclick="document.getElementById('file-input').click()">
+        <div class="ua-icon">⊕</div>
+        <div class="ua-main">Drop image here or click to browse</div>
+        <div class="ua-sub">PNG / JPG / BMP / TIFF · Max 16 MB</div>
+        <input type="file" id="file-input" accept="image/*"/>
+      </div>
+      <div class="preview-row" id="prev-row">
+        <img class="prev-img" id="prev-thumb" src="" alt=""/>
+        <div class="prev-meta">
+          File: <strong id="prev-name">—</strong><br/>
+          Size: <strong id="prev-size">—</strong>&nbsp;&nbsp;
+          Dims: <strong id="prev-dims">—</strong>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-red" id="btn-enc" onclick="runEncrypt()" disabled>
+      Encrypt &amp; Generate Session ID →
+    </button>
+
+    <!-- Progress -->
+    <div class="prog-wrap" id="pw">
+      <div class="prog-top">
+        <span class="prog-txt" id="pt">Initialising...</span>
+        <span class="prog-pct" id="pp">0%</span>
+      </div>
+      <div class="pbar"><div class="pfill" id="pf"></div></div>
+      <div class="steps">
+        <div class="stp" id="s1">Key Generation</div>
+        <div class="stp" id="s2">Chaotic Map</div>
+        <div class="stp" id="s3">Bijective Enc</div>
+        <div class="stp" id="s4">Diffusion</div>
+      </div>
+    </div>
+
+    <div class="alert" id="ea"><span>⚠</span><span id="eam"></span></div>
+
+    <!-- Results -->
+    <div class="results" id="enc-res">
+
+      <div class="section-head">
+        <span class="sh-num">01</span>
+        <span class="sh-title">Visual Analysis</span>
+        <span class="sh-line"></span>
+      </div>
+
+      <div class="img-grid">
+        <div class="img-tile">
+          <div class="img-tile-top"><span>Original</span><span class="tag tag-plain">Plaintext</span></div>
+          <img id="io" src="" alt=""/>
+        </div>
+        <div class="img-tile">
+          <div class="img-tile-top"><span>Bijective Stage</span><span class="tag tag-bij">T⁻¹(Ta+Tb)</span></div>
+          <img id="ib" src="" alt=""/>
+        </div>
+        <div class="img-tile">
+          <div class="img-tile-top"><span>Encrypted</span><span class="tag tag-enc">Ciphertext</span></div>
+          <img id="ie" src="" alt=""/>
+        </div>
+      </div><!-- end img-grid -->
+
+      <div class="section-head">
+        <span class="sh-num">02</span>
+        <span class="sh-title">Security Metrics</span>
+        <span class="sh-line"></span>
+      </div>
+
+      <div class="met-grid">
+        <div class="met met-npcr">
+          <div class="met-lbl">NPCR — Pixel Change Rate</div>
+          <div class="met-val" id="vn">—</div>
+          <div class="met-hint">Ideal ≥ 99.6%</div>
+          <div class="met-bar"><div id="bn" style="background:var(--blue);width:0%"></div></div>
+        </div>
+        <div class="met met-uaci">
+          <div class="met-lbl">UACI — Avg Intensity Change</div>
+          <div class="met-val" id="vu">—</div>
+          <div class="met-hint">Ideal ≈ 33.4%</div>
+          <div class="met-bar"><div id="bu" style="background:var(--red);width:0%"></div></div>
+        </div>
+        <div class="met met-stat">
+          <div class="met-lbl">Encryption Status</div>
+          <div class="met-val" id="vs">—</div>
+          <div class="met-hint" id="vd">—</div>
+          <div class="met-bar"><div id="bs" style="background:var(--green);width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <span class="sh-num">04</span>
+        <span class="sh-title">Session ID</span>
+        <span class="sh-line"></span>
+      </div>
+
+      <div class="session-card">
+        <div class="sess-lbl">Transmission Key — Share with Receiver</div>
+        <div class="sess-id" id="sid">—</div>
+        <div class="sess-note">
+          Provide this Session ID to the authorised receiver.<br/>
+          They will use it on the Receiver page to decrypt the evidence image.
+        </div>
+        <div class="dl-row" id="dlr"></div>
+      </div>
+
+    </div><!-- /enc-res -->
+  </div>
+</div>
+
+
+<!-- ════════════════════════════
+     RECEIVER
+════════════════════════════ -->
+<div id="page-receiver" class="page receiver-page">
+  <div class="page-wrap">
+    <button class="back" onclick="goLanding()">← Back to role select</button>
+
+    <div class="page-header">
+      <div class="ph-left">
+        <div class="ph-label">Role — Receiver</div>
+        <div class="ph-title">Decrypt Evidence</div>
+      </div>
+      <div class="ph-right">
+        Enter session ID from sender<br/>
+        Recovered image will appear below
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="block-label">Enter Session ID</div>
+      <label class="field-lbl">Session ID (provided by sender)</label>
+      <input class="field-in" id="dec-in"
+             placeholder="e.g.  A3F9C12B" maxlength="8"
+             oninput="this.value=this.value.toUpperCase()"
+             onkeydown="if(event.key==='Enter') runDecrypt()"/>
+    </div>
+
+    <button class="btn btn-blue" onclick="runDecrypt()">
+      Decrypt Evidence →
+    </button>
+
+    <div class="alert" id="da"><span>⚠</span><span id="dam"></span></div>
+
+    <!-- Only the decrypted image -->
+    <div class="dec-out" id="dec-out">
+      <div class="dec-img-wrap">
+        <div class="dec-img-top">
+          <div class="dec-img-title">Recovered Evidence Image</div>
+          <div class="dec-badge">✓ Decryption Verified</div>
+        </div>
+        <img id="dec-img" src="" alt="recovered evidence"/>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+let selFile = null, cChart = null;
+
+function goLanding() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-landing').classList.add('active');
+}
+function goPage(r) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + r).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// Upload
+const zone = document.getElementById('upload-zone');
+const fi   = document.getElementById('file-input');
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if(fi.files[0]) handleFile(fi.files[0]); });
+
+function handleFile(f) {
+  selFile = f;
+  const url = URL.createObjectURL(f);
+  document.getElementById('prev-thumb').src = url;
+  const img = new window.Image();
+  img.onload = () => document.getElementById('prev-dims').textContent = img.width + ' × ' + img.height + 'px';
+  img.src = url;
+  document.getElementById('prev-name').textContent = f.name;
+  document.getElementById('prev-size').textContent = (f.size/1024).toFixed(1) + ' KB';
+  document.getElementById('prev-row').classList.add('show');
+  document.getElementById('btn-enc').disabled = false;
+}
+
+function sp(pct,txt){ document.getElementById('pf').style.width=pct+'%'; document.getElementById('pt').textContent=txt; document.getElementById('pp').textContent=pct+'%'; }
+function ss(id,st){ const el=document.getElementById(id); el.classList.remove('active','done'); if(st) el.classList.add(st); }
+
+function renderChaos(data) {
+  const ctx = document.getElementById('cc').getContext('2d');
+  if(cChart) cChart.destroy();
+  cChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:'#1a1814', borderWidth:1, pointRadius:0, tension:0, fill:true, backgroundColor:'rgba(26,24,20,0.04)' }] },
+    options:{
+      responsive:true, animation:{duration:500},
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{display:false},
+        y:{ticks:{color:'#7a756c',font:{family:'DM Mono',size:9}}, grid:{color:'rgba(226,221,214,0.8)'}}
+      }
+    }
+  });
+}
+
+function renderT(mat) {
+  const g = document.getElementById('tg'); g.innerHTML='';
+  const flat = mat.flat(), mx = Math.max(...flat);
+  flat.forEach(v => {
+    const c = document.createElement('div'); c.className='t-cell';
+    const p = mx>0 ? v/mx : 0;
+    c.style.background = `rgba(26,58,107,${0.05 + p*0.5})`;
+    c.style.color = p>0.6 ? '#fff' : '#1a1814';
+    c.textContent = v>0 ? v : '';
+    g.appendChild(c);
+  });
+}
+
+async function runEncrypt() {
+  if(!selFile) return;
+  document.getElementById('btn-enc').disabled = true;
+  document.getElementById('ea').classList.remove('show');
+  document.getElementById('enc-res').classList.remove('show');
+  document.getElementById('pw').classList.add('show');
+  ['s1','s2','s3','s4'].forEach(s=>ss(s,''));
+
+  sp(10,'Generating T matrix key...'); ss('s1','active'); await sleep(300);
+  sp(30,'Computing chaotic sequence...'); ss('s1','done'); ss('s2','active'); await sleep(300);
+  sp(58,'Applying bijective mapping...'); ss('s2','done'); ss('s3','active'); await sleep(300);
+  sp(80,'Applying diffusion layer...'); ss('s3','done'); ss('s4','active');
+
+  const fd = new FormData(); fd.append('image', selFile);
+  try {
+    const res = await fetch('/encrypt',{method:'POST',body:fd});
+    const d   = await res.json();
+    sp(100,'Complete'); ss('s4','done');
+
+    if(!d.success){ showA('ea','eam',d.error); document.getElementById('btn-enc').disabled=false; return; }
+
+    document.getElementById('io').src = 'data:image/png;base64,'+d.orig_b64;
+    document.getElementById('ib').src = 'data:image/png;base64,'+d.bij_b64;
+    document.getElementById('ie').src = 'data:image/png;base64,'+d.enc_b64;
+
+    fade('vn', d.npcr+'%'); fade('vu', d.uaci+'%');
+    setTimeout(()=>{
+      document.getElementById('bn').style.width = Math.min(d.npcr,100)+'%';
+      document.getElementById('bu').style.width = Math.min(d.uaci/50*100,100)+'%';
+      document.getElementById('bs').style.width = '100%';
+    },200);
+
+    const ok = d.npcr>=99&&d.uaci>=28&&d.uaci<=40;
+    document.getElementById('vs').textContent = ok ? '✓ Secure' : '⚠ Review';
+    document.getElementById('vs').style.color = ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('vd').textContent = 'NPCR: '+(d.npcr>=99?'Pass':'Weak')+' · UACI: '+(d.uaci>=28&&d.uaci<=40?'Pass':'Weak');
+
+    document.getElementById('sid').textContent = d.session_id;
+    document.getElementById('dlr').innerHTML =
+      `<a class="dl-btn" href="/download/${d.session_id}/key">↓ Key Matrix</a>
+       <a class="dl-btn" href="/download/${d.session_id}/session">↓ Session Params</a>
+       <a class="dl-btn" href="/download/${d.session_id}/encrypted">↓ Encrypted Data</a>`;
+
+    document.getElementById('enc-res').classList.add('show');
+  } catch(e){ showA('ea','eam','Server error: '+e.message); }
+  document.getElementById('btn-enc').disabled = false;
+}
+
+async function runDecrypt() {
+  const sid = document.getElementById('dec-in').value.trim();
+  if(!sid){ showA('da','dam','Please enter a Session ID'); return; }
+  document.getElementById('da').classList.remove('show');
+  document.getElementById('dec-out').classList.remove('show');
+  try {
+    const res = await fetch('/decrypt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sid})});
+    const d   = await res.json();
+    if(!d.success){ showA('da','dam',d.error); return; }
+    document.getElementById('dec-img').src = 'data:image/png;base64,'+d.dec_b64;
+    document.getElementById('dec-out').classList.add('show');
+  } catch(e){ showA('da','dam','Server error: '+e.message); }
+}
+
+function showA(id,mid,msg){ document.getElementById(id).classList.add('show'); document.getElementById(mid).textContent=msg; }
+function fade(id,val){ const el=document.getElementById(id); el.style.opacity=0; setTimeout(()=>{ el.textContent=val; el.style.transition='opacity 0.4s'; el.style.opacity=1; },100); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+</script>
+</body>
+</html>
